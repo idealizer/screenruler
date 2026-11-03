@@ -94,6 +94,7 @@ final class SizePanel: NSPanel {
 final class LoupePanel: NSPanel {
     private let canvas = LoupeCanvas()
     private var timer: Timer?
+    private var captureInFlight = false
     private let onPick: (CGPoint, Bool) -> Void
     var zeroMode = true
 
@@ -153,12 +154,19 @@ final class LoupePanel: NSPanel {
             let centerY = ScreenGeom.primaryHeight() - canvas.anchor.y
             setFrameOrigin(NSPoint(x: canvas.anchor.x + 28, y: centerY - 125))
         }
+        guard !captureInFlight else { return }
         let cells: CGFloat = 21
         let scale = max(canvas.scale, 1)
         let size = cells / scale
         let rect = CGRect(x: canvas.anchor.x - size / 2, y: canvas.anchor.y - size / 2, width: size, height: size)
-        canvas.image = ScreenGrab.image(quartzRect: rect, below: canvas.windowNumber)
-        canvas.needsDisplay = true
+        let windowNumber = canvas.windowNumber
+        captureInFlight = true
+        ScreenGrab.image(quartzRect: rect, below: windowNumber) { [weak self] image in
+            guard let self else { return }
+            self.captureInFlight = false
+            if let image { self.canvas.image = image }
+            self.canvas.needsDisplay = true
+        }
     }
 
     override var canBecomeKeyWindow: Bool { true }

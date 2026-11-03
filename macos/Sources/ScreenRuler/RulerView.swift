@@ -24,6 +24,12 @@ final class RulerView: NSView {
     override var isFlipped: Bool { true }
     override var acceptsFirstResponder: Bool { true }
 
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        let hit = super.hitTest(point)
+        if hit === readout || hit === statusLabel { return self }
+        return hit
+    }
+
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         readout.font = NSFont.systemFont(ofSize: 15, weight: .semibold)
@@ -33,7 +39,6 @@ final class RulerView: NSView {
         readout.drawsBackground = false
         readout.isEditable = false
         readout.isSelectable = false
-        readout.isEnabled = false
         addSubview(readout)
         statusLabel.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         statusLabel.textColor = NSColor(calibratedWhite: 0.97, alpha: 1)

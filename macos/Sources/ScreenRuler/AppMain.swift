@@ -262,25 +262,27 @@ final class RulerController: NSObject {
         panel.orderOut(nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { [weak self] in
             guard let self else { return }
-            defer { self.panel.orderFrontRegardless() }
-            guard let image = ScreenGrab.image(quartzRect: rect, below: 0),
-                  let data = ScreenGrab.pngData(from: image) else {
-                self.ruler.showStatus("Couldn't capture that area.")
-                return
-            }
-            let folder = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first?
-                .appendingPathComponent("ScreenRuler", isDirectory: true)
-            guard let folder else { return }
-            try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "")
-            let url = folder.appendingPathComponent("area-\(stamp).png")
-            do {
-                try data.write(to: url)
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.writeObjects([NSImage(data: data) ?? NSImage()])
-                self.shot.present(url: url, image: NSImage(data: data) ?? NSImage(), near: frame)
-            } catch {
-                self.ruler.showStatus("Couldn't save that snapshot.")
+            ScreenGrab.image(quartzRect: rect, below: 0) { [weak self] image in
+                guard let self else { return }
+                self.panel.orderFrontRegardless()
+                guard let image, let data = ScreenGrab.pngData(from: image) else {
+                    self.ruler.showStatus("Couldn't capture that area.")
+                    return
+                }
+                let folder = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first?
+                    .appendingPathComponent("ScreenRuler", isDirectory: true)
+                guard let folder else { return }
+                try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "")
+                let url = folder.appendingPathComponent("area-\(stamp).png")
+                do {
+                    try data.write(to: url)
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.writeObjects([NSImage(data: data) ?? NSImage()])
+                    self.shot.present(url: url, image: NSImage(data: data) ?? NSImage(), near: frame)
+                } catch {
+                    self.ruler.showStatus("Couldn't save that snapshot.")
+                }
             }
         }
     }
@@ -413,7 +415,7 @@ final class RulerController: NSObject {
         if command && chars == "1" { setMode(.horizontal); return }
         if command && chars == "2" { setMode(.vertical); return }
         if command && chars == "3" { setMode(.area); return }
-        let blocked = NSEvent.ModifierFlags([.command, .control, .option])
+        let blocked: NSEvent.ModifierFlags = [.command, .control, .option]
         if chars == "z" && flags.isDisjoint(with: blocked) { toggleZoom(); return }
         if command && chars == "c" {
             NSPasteboard.general.clearContents()
