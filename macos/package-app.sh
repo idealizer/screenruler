@@ -16,6 +16,7 @@ if [[ ! -d "$toolchain" ]]; then
 fi
 
 install_name_tool -add_rpath "@executable_path/../Frameworks" "$binary"
+install_name_tool -add_rpath "/usr/lib/swift" "$binary"
 
 bundle_deps() {
   local file="$1"
@@ -29,6 +30,9 @@ bundle_deps() {
     name="$(basename "$dep")"
     dest="$app/Contents/Frameworks/$name"
     if [[ ! -f "$toolchain/$name" ]]; then
+      if [[ -f "/usr/lib/swift/$name" ]]; then
+        continue
+      fi
       echo "Missing Swift library $name (referenced by $file)" >&2
       exit 1
     fi
@@ -47,12 +51,8 @@ bundle_deps() {
 
 bundle_deps "$binary"
 count="$(find "$app/Contents/Frameworks" -name '*.dylib' | wc -l | tr -d ' ')"
-echo "Bundled $count Swift libraries"
-if [[ "$count" -lt 1 ]]; then
-  echo "No Swift libraries were bundled, so the app would not launch." >&2
-  otool -L "$binary" >&2
-  exit 1
-fi
+echo "Bundled $count Swift libraries from the toolchain"
+otool -L "$binary"
 
 find "$app/Contents/Frameworks" -name '*.dylib' -exec codesign --force --sign - {} \;
 codesign --force --sign - "$app"
