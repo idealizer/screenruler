@@ -11,7 +11,7 @@ A translucent ruler for measuring pixels on Windows.
 
 A desktop shortcut is optional. The installer leaves that box unchecked.
 
-Windows may show “Windows protected your PC” the first time someone downloads it. Choose **More info**, then **Run anyway**. The publisher is **Content Factory OÜ**.
+Windows shows “Windows protected your PC” the first time someone downloads it, because the file is not signed. Choose **More info**, then **Run anyway**. The ruler does not ask again after that.
 
 ## Remove
 

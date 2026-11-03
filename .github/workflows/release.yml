@@ -1,17 +1,4 @@
-# Publishes a signed installer when a version tag is pushed (v1.0.0).
-# The signature publisher is Content Factory OÜ. An unsigned file is never uploaded.
-#
-# After Content Factory OÜ is validated in Azure Artifact Signing, add these
-# repository secrets. The endpoint must match the region of the signing account
-# (West Europe is https://weu.codesigning.azure.net/). The certificate profile
-# must be a Public Trust profile for Content Factory OÜ.
-#
-#   AZURE_TENANT_ID
-#   AZURE_CLIENT_ID
-#   AZURE_CLIENT_SECRET
-#   AZURE_SIGNING_ENDPOINT
-#   AZURE_SIGNING_ACCOUNT
-#   AZURE_CERT_PROFILE
+# Publishes the installer when a version tag is pushed (v1.0.0).
 
 name: Release
 
@@ -30,28 +17,6 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Require Content Factory OÜ signing
-        shell: pwsh
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_SIGNING_ENDPOINT: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
-          AZURE_SIGNING_ACCOUNT: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
-          AZURE_CERT_PROFILE: ${{ secrets.AZURE_CERT_PROFILE }}
-        run: |
-          foreach ($name in @(
-            'AZURE_CLIENT_ID',
-            'AZURE_TENANT_ID',
-            'AZURE_CLIENT_SECRET',
-            'AZURE_SIGNING_ENDPOINT',
-            'AZURE_SIGNING_ACCOUNT',
-            'AZURE_CERT_PROFILE')) {
-            if ([string]::IsNullOrWhiteSpace((Get-Item "env:$name").Value)) {
-              throw "Missing $name. Refusing to publish an unsigned installer."
-            }
-          }
-
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -67,22 +32,6 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "VERSION=$version" -Encoding utf8NoBOM
           dotnet publish ScreenRuler.csproj -c Release -o artifacts/app `
             -p:Version=$version -p:FileVersion=$version -p:InformationalVersion=$version
-
-      - name: Sign the application
-        uses: azure/artifact-signing-action@v2
-        with:
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
-          signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
-          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE }}
-          files: ${{ github.workspace }}\artifacts\app\ScreenRuler.exe
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
-          description: Screen Ruler
-          description-url: https://github.com/idealizer/screenruler
 
       - name: Install Inno Setup
         shell: pwsh
@@ -103,23 +52,6 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $root "dist") | Out-Null
           & $iscc "/DMyAppVersion=$env:VERSION" "/DPublishDir=$root\artifacts\app" "/O$root\dist" installer\ScreenRuler.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Sign the installer
-        uses: azure/artifact-signing-action@v2
-        with:
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
-          signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
-          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE }}
-          files-folder: ${{ github.workspace }}\dist
-          files-folder-filter: exe
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
-          description: Screen Ruler setup
-          description-url: https://github.com/idealizer/screenruler
 
       - name: Publish the release
         uses: softprops/action-gh-release@v2
