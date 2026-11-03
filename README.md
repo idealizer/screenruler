@@ -2,6 +2,28 @@
 
 A translucent ruler for measuring pixels on Windows.
 
+## Screenshots
+
+Horizontal ruler, dark glass. The number in the middle is the length. The hairline follows the pointer.
+
+![Horizontal ruler on a dark glass background, reading 1088 px](docs/horizontal-dark.jpg)
+
+The same ruler with light ticks.
+
+![Horizontal ruler with light ticks, reading 1088 px](docs/horizontal-light.jpg)
+
+Flip it to measure height.
+
+![Vertical ruler reading 406 px](docs/vertical.png)
+
+Mark an area, then snapshot it. The picture is copied to the clipboard and saved under Pictures\ScreenRuler.
+
+![Area marker at 300 by 250 px, with the snapshot button](docs/area-snapshot.png)
+
+Double-click the size to type a width and height, or pick a screen or ad preset.
+
+![Size picker with screen and ad presets](docs/presets.jpg)
+
 ## Install
 
 1. Open the [latest release](https://github.com/idealizer/screenruler/releases/latest).
