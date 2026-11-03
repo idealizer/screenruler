@@ -1,0 +1,41 @@
+# Builds the Mac app and adds ScreenRuler-macOS.zip to the release.
+
+name: macOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Build the app
+        run: bash macos/package-app.sh
+
+      - name: Add the zip to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            tag="${GITHUB_REF_NAME}"
+          else
+            tag="v1.0.0"
+          fi
+          for attempt in 1 2 3 4 5 6; do
+            if gh release upload "$tag" "dist/ScreenRuler-macOS.zip" --clobber; then
+              exit 0
+            fi
+            sleep 20
+          done
+          exit 1

@@ -4,3 +4,4 @@ obj/
 *.user
 artifacts/
 dist/
+macos/.build/
