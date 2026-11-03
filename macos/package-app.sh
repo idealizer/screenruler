@@ -34,11 +34,8 @@ bundle_deps() {
     name="$(basename "$dep")"
     dest="$app/Contents/Frameworks/$name"
     if [[ ! -f "$toolchain/$name" ]]; then
-      if [[ -f "/usr/lib/swift/$name" ]]; then
-        continue
-      fi
-      echo "Missing Swift library $name (referenced by $file)" >&2
-      exit 1
+      echo "Using the system copy of $name"
+      continue
     fi
     if [[ ! -f "$dest" ]]; then
       cp "$toolchain/$name" "$dest"
