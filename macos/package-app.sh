@@ -15,8 +15,12 @@ if [[ ! -d "$toolchain" ]]; then
   exit 1
 fi
 
-install_name_tool -add_rpath "@executable_path/../Frameworks" "$binary"
-install_name_tool -add_rpath "/usr/lib/swift" "$binary"
+if ! otool -l "$binary" | grep -q "@executable_path/../Frameworks"; then
+  install_name_tool -add_rpath "@executable_path/../Frameworks" "$binary"
+fi
+if ! otool -l "$binary" | grep -q "/usr/lib/swift"; then
+  install_name_tool -add_rpath "/usr/lib/swift" "$binary"
+fi
 
 bundle_deps() {
   local file="$1"
