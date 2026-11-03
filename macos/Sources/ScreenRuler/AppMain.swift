@@ -9,8 +9,8 @@ struct DockItem {
 }
 
 final class RulerPanel: NSPanel {
-    override var canBecomeKeyWindow: Bool { true }
-    override var canBecomeMainWindow: Bool { true }
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
 }
 
 final class RulerController: NSObject {
@@ -462,8 +462,3 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return flock(lockFD, LOCK_EX | LOCK_NB) == 0
     }
 }
-
-let app = NSApplication.shared
-let delegate = AppDelegate()
-app.delegate = delegate
-app.run()

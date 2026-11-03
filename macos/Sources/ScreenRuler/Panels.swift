@@ -84,7 +84,7 @@ final class SizePanel: NSPanel {
         field.becomeFirstResponder()
     }
 
-    override var canBecomeKeyWindow: Bool { true }
+    override var canBecomeKey: Bool { true }
 
     @objc private func applyField() { onApply(field.stringValue) }
     @objc private func preset(_ sender: NSButton) { onApply(sender.identifier?.rawValue.replacingOccurrences(of: "x", with: " × ") ?? "") }
@@ -169,7 +169,7 @@ final class LoupePanel: NSPanel {
         }
     }
 
-    override var canBecomeKeyWindow: Bool { true }
+    override var canBecomeKey: Bool { true }
 }
 
 final class LoupeCanvas: NSView {
@@ -260,5 +260,5 @@ final class ShotPanel: NSPanel {
     @objc private func reveal() { if let fileURL { NSWorkspace.shared.activateFileViewerSelecting([fileURL]) } }
     @objc private func closeCard() { orderOut(nil) }
     override func cancelOperation(_ sender: Any?) { orderOut(nil) }
-    override var canBecomeKeyWindow: Bool { true }
+    override var canBecomeKey: Bool { true }
 }
